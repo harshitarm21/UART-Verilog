@@ -1,0 +1,54 @@
+module uart_tx_tb(
+
+    );
+    reg clk;
+    reg rst;
+    reg tx_start;
+    reg [7:0]tx_data;
+    reg baud_tick;
+    
+    wire tx;
+    wire busy;
+    
+    uart_tx uut( .clk(clk),.rst(rst),.tx_start(tx_start),
+    .tx_data(tx_data),.baud_tick(baud_tick),
+    .tx(tx),.busy(busy));
+    
+initial begin
+    clk = 0;
+end
+
+always begin
+    #5 clk = ~clk;
+end
+initial begin
+rst = 1'b1;
+tx_start = 1'b0;
+tx_data = 8'd0;
+
+#20 rst = 1'b0;
+#10;                    // Wait one clock period
+    tx_data = 8'b10110010;  // Data to transmit
+    tx_start = 1'b1;
+
+    #10;                    // Keep tx_start high for one clock cycle
+    tx_start = 1'b0;
+    
+    #1000;
+    $finish;
+
+end
+initial begin
+    baud_tick = 0;
+
+    forever begin
+        repeat (5) @(posedge clk);
+        baud_tick = 1;
+
+        @(posedge clk);
+        baud_tick = 0;
+    end
+end
+
+    
+endmodule
